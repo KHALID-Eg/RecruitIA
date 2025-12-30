@@ -1,0 +1,95 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: gateway-service
+
+  cloud:
+    gateway:
+      #  Désactiver le service discovery locator automatique
+      # Pour éviter les routes automatiques du type /service-name/**
+      discovery:
+        locator:
+          enabled: false
+
+      # CORS Configuration (pour Angular / Frontend)
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:4200"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
+
+      #  ROUTES MANUELLES
+      routes:
+        # ================= AUTH SERVICE (PUBLIC) =================
+        - id: auth-service-route
+          uri: lb://AUTH-SERVICE
+          predicates:
+            - Path=/auth/**
+          # Aucun filtre JWT - routes publiques
+          filters:
+            - StripPrefix=0
+
+        # ================= CANDIDATE SERVICE (PROTÉGÉ) =================
+        - id: candidate-service-route
+          uri: lb://CANDIDATE-SERVICE
+          predicates:
+            - Path=/candidates/**
+          #  Filtre JWT obligatoire
+          filters:
+            - name: JwtFilter
+
+
+
+        # ================= OFFER SERVICE (PROTÉGÉ) =================
+        - id: offer-service-route
+          uri: lb://OFFER-SERVICE
+          predicates:
+            - Path=/offers/**
+          #  Filtre JWT obligatoire
+          filters:
+            - name: JwtFilter
+
+        # ================= AI SERVICE (PROTÉGÉ) =================
+        - id: ai-service-route
+          uri: lb://AI-SERVICE
+          predicates:
+            - Path=/ai/**
+          #  Filtre JWT obligatoire
+          filters:
+            - name: JwtFilter
+
+#  EUREKA CONFIGURATION
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+    hostname: localhost
+
+#  JWT CONFIGURATION
+#  IMPORTANT: Le secret doit être IDENTIQUE à celui de auth-service
+jwt:
+  secret: MYSUPERSECRETKEY256BITSMINIMUMFORJWT=====
+  expiration: 86400000
+
+#  LOGGING (optionnel - pour debug)
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    org.keah.gatewayservice.security.JwtFilter: DEBUG
+    org.springframework.cloud.netflix.eureka: INFO
+

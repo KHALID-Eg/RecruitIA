@@ -1,0 +1,33 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: CANDIDATE-SERVICE
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/candidate_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+    username: root
+    password: root
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+  instance:
+    prefer-ip-address: true
+    hostname: localhost
+
+jwt:
+  secret: MYSUPERSECRETKEY256BITSMINIMUMFORJWT=====
+  expiration: 86400000
+
+ai:
+  service:
+    url: http://localhost:8087/ai
